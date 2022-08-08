@@ -268,7 +268,14 @@ if (Part.2) {
   if (TRUE) source('~/GitHub/Packages/Seurat.pipeline/elements/Differential.gene.expression.Loop.R'); create_set_Original_OutDir()
   # if (F) source("~/GitHub/Projects/TSC2/s3/s3.elements.mseq/Differential.gene.expression.Batch.comparison.R"); create_set_Original_OutDir()
   
-  plotCellFractionsBarplots <- FALSE
+  
+  
+  "weird: batch was not set"
+  combined.obj$batch <- substr(combined.obj$orig.ident,nchar(samples),nchar(samples))
+  
+  "weird: batch was not set"
+  
+  plotCellFractionsBarplots <- T
   if (TRUE) source('~/GitHub/Packages/Seurat.pipeline/elements/Cell.cycle.scoring.R'); create_set_Original_OutDir()
   
   if (TRUE) source('~/GitHub/Packages/Seurat.pipeline/elements/PCA.R'); create_set_Original_OutDir()
@@ -276,185 +283,14 @@ if (Part.2) {
   if (TRUE) source("~/GitHub/Packages/Seurat.pipeline/elements/Plot.3D.umaps.R"); create_set_Original_OutDir()
   combined.obj <- RecallReduction(obj = combined.obj, dim = 2, reduction = "umap")
   
-  # if (TRUE) source("~/GitHub/Projects/SEO/GO-scoring/GeneSetScores.R"); create_set_Original_OutDir()
-  
-  if (TRUE) source("~/GitHub/Packages/Seurat.pipeline/elements/STRING.db.auto.cluster.annotation.R"); create_set_Original_OutDir()
-  
 }
 
 
 
 if (TRUE) { combined.obj@misc$p <- p; isave.RDS(obj = combined.obj, inOutDir = T) } # Add a parameter list to a Seurat object's misc slot # seuSaveRds(object = combined.obj, use_Original_OutDir = T)
-"BUG ABOVE !!!"
-"BUG ABOVE !!!"
-"BUG ABOVE !!!"
 
 
 memory.biggest.objects()
 say()
 
 
-
-# WriteOut cells for Thomas --------------------------------
-if (T) {
-  create_set_Original_OutDir()
-  for (i in 1:n.datasets ) {
-    cells <- colnames(combined.obj)
-    fname <- kpp('CBC.Seurat.filtered', samples.short[i], 'cells',l(cells), 'tsv')
-    write.simple.vec(input_vec = cells, ManualName = fname)
-  }
-}
-
-
-
-
-{
-  cols.used <- c("log10.nCount_RNA", "log10.nFeature_RNAs"
-                 # , "nCount_RNA", "nFeature_RNA"
-                 , "percent.mito", "percent.ribo"
-                 , "percent.AC.GenBank", "percent.AL.EMBL", "percent.LINC",
-                 "percent.MALAT1", "percent.antisense", "percent.RabV", "log10.HGA_Markers",
-                 "log10.RabV_Markers"
-                 
-  )
-  plot.Metadata.Cor.Heatmap(columns = cols.used)
-  plot.Metadata.Cor.Heatmap(columns = cols.used, cormethod = 'spearman')
-  
-}
-
-
-{
-  pl.Rabv.mito.scatter <- FeatureScatter(object = combined.obj,
-                                         feature1 = 'percent.mito',
-                                         feature2 = 'percent.RabV' ) +
-    ggtitle('Pct Mito does not explain Pct RabV') +
-    scale_x_log10() +
-    scale_y_log10()
-  qqSave(pl.Rabv.mito.scatter, w = 7, h = 5)
-  
-  # ------------------------------------------------------------------------
-  pl.Rabv.Feature.count.scatter <- FeatureScatter(object = combined.obj,
-                                                  feature1 = 'log10.RabV_Markers',
-                                                  feature2 = 'log10.nFeature_RNAs' ) +
-    ggtitle('RabV is preferentially on LQ cells')
-  qqSave(pl.Rabv.Feature.count.scatter, w = 7, h = 5)
-  
-  # pl.Rabv.Feature.count.scatter <- pl.Rabv.Feature.count.scatter +
-  #   scale_x_log10() +
-  #   scale_y_log10()
-  # qqSave(pl.Rabv.Feature.count.scatter, suffix = 'log', w = 7, h = 5)
-  
-  # ------------------------------------------------------------------------
-  pl.Rabv.Feature.count.scatter <- FeatureScatter(object = combined.obj,
-                                                  feature1 = 'log10.RabV_Markers',
-                                                  feature2 = 'log10.nFeature_RNAs' ) +
-    ggtitle('RabV is preferentially on LQ cells') +
-    qqSave(pl.Rabv.Feature.count.scatter, w = 7, h = 5)
-  
-  
-  # ------------------------------------------------------------------------
-  pl.Rabv.HGA.count.scatter <- FeatureScatter(object = combined.obj,
-                                              feature1 = 'log10.RabV_Markers',
-                                              feature2 = 'log10.HGA_Markers' ) +
-    ggtitle('RabV is preferentially in stressed cells')
-  # +    scale_x_log10() +
-  #   scale_y_log10()
-  qqSave(pl.Rabv.HGA.count.scatter, w = 7, h = 5)
-  
-  oo()
-  
-  
-  FeatureScatter(object = combined.obj,
-                 feature1 = 'percent.RabV',
-                 feature2 = 'nFeature_RNA' ) +  scale_x_log10()  +  scale_y_log10()
-  
-  FeatureScatter(object = combined.obj,
-                 feature1 = 'percent.RabV',
-                 feature2 = 'nCount_RNA' ) +  scale_x_log10()  +  scale_y_log10()
-  
-  FeatureScatter(object = combined.obj$per,
-                 feature1 = 'percent.RabV',
-                 feature2 = 'perc' ) +  scale_x_log10()  +  scale_y_log10()
-  
-  
-  
-}
-
-
-
-#
-#
-# {
-#   clUMAP('RNA_snn_res.0.3')
-#
-#   combined.obj@meta.data$'RNA_snn_res.0.3.Manual.Names'   = translate(vec = as.character(combined.obj@meta.data$'RNA_snn_res.0.3')
-#                                                                       , oldvalues = as.character(c(9, 3, 6, 8, 4, 0, 1, 2, 5, 7))
-#                                                                       , newvalues = c("iN", "Progenitors", "Astrocytes", "LQ glia"
-#                                                                                       , "immat. N", "ul EN", "ul EN", "ul EN", "dl EN", "LQ EN"))
-#   clUMAP('RNA_snn_res.0.3.Manual.Names')
-#
-# }
-
-
-
-
-
-{
-  
-  # genes.ls$RabV.All = c("AAV-mCamk2", "AAV-Dlx", "AAV-common"
-  #                       , "N.RabV.N2xc", "P.RabV.N2c", "M.RabV.N2c", "L.RabV.N2c", "Crimson.RabV.N2c")
-  #
-  
-  # scBarplotFractionAboveThr <- function(thrX = 0.01, columns.used = c('cl.names.top.gene.res.0.3', 'percent.ribo'), obj = combined.obj) { # Calculat the fraction of cells per cluster above a certain threhold
-  #   meta = obj@meta.data
-  #   (fr_ribo_low_cells <- meta %>%
-  #       dplyr::select(columns.used)  %>%
-  #       dplyr::group_by_(columns.used[1])  %>%
-  #       summarize(n_cells = n(),
-  #                 n_ribo_low_cells = sum(!!as.name(columns.used[2]) < thrX),
-  #                 fr_ribo_low_cells = n_ribo_low_cells / n_cells) %>%
-  #       FirstCol2RowNames())
-  #   print(fr_ribo_low_cells)
-  #   (v.fr_ribo_low_cells <- 100* as.named.vector(fr_ribo_low_cells[3]))
-  #   qbarplot(v.fr_ribo_low_cells, xlab.angle = 45, xlab = 'Clusters', ylab = '% Cells')
-  # }
-  
-  combined.obj@meta.data$'AAV-mCamk2' = combined.obj@assays$RNA@data['AAV-mCamk2',]
-  combined.obj@meta.data$'AAV-Dlx' = combined.obj@assays$RNA@data['AAV-Dlx',]
-  combined.obj@meta.data$'AAV-common' = combined.obj@assays$RNA@data['AAV-common',]
-  
-  scBarplotFractionAboveThr(columns.used = c('cl.names.top.gene.res.0.3', 'AAV-mCamk2'), thrX = 0.01)
-  scBarplotFractionAboveThr(columns.used = c('cl.names.top.gene.res.0.3', 'AAV-Dlx'), thrX = 0.01)
-  scBarplotFractionAboveThr(columns.used = c('cl.names.top.gene.res.0.3', 'AAV-common'), thrX = 0.01)
-  "BUG ABOVE !!!"
-  "BUG ABOVE !!!"
-  "BUG ABOVE !!!"
-  
-  
-  
-  
-}
-
-
-
-{
-  ManualNames <- c(
-    "0" = 'EN-UL',
-    "1" = 'EN-immature',
-    "2" = 'EN-UL',
-    "3" = 'Progenitors',
-    "4" = 'EN-UL',
-    "5" = 'EN-DL',
-    "6" = 'Progenitors',
-    "7" = 'IN',
-    "8" = 'Mispatterned',
-    "9" = 'Mispatterned'
-  )
-  
-  combined.obj <- RenameClustering(namedVector = ManualNames
-                                   , orig.ident =  "RNA_snn_res.0.3"
-                                   , new.ident = ppp(orig.ident,"ManualNames"))
-  
-  toclip(t(t(table(combined.obj$RNA_snn_res.0.3.ManualNames))))
-  clUMAP()
-}
